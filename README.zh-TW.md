@@ -1,65 +1,84 @@
-[English](README.md)
+# Task Resource Guard
 
-# Task Resource Guard（安全收尾與登記式清理）
+**工作做完，讓這次任務建立的資源正常收尾。**
 
-**MIT 授權的獨立原始碼候選版，尚無標籤版本。** 本套件與其他 Router、交易工具無關。授權與來源見 [LICENSE](LICENSE) 與 [PROVENANCE.md](PROVENANCE.md)。專案位置為 [john07180718/task-resource-guard](https://github.com/john07180718/task-resource-guard)，一般問題可用 GitHub Issues 回報。
+提供 JavaScript 資源收尾函式、需主動接入的 Windows Node 服務登記介面，以及給 AI 使用的 Skill。先預覽哪些服務符合條件，保護尚未完成的工作，再請服務正常關閉。
 
-AI 協助開發時，臨時測試 worker、預覽或自動化程序可能在工作結束後留下。直接按名稱關閉所有 Node／瀏覽器程序，容易一起中斷別人的工作。本套件提供兩種可選做法：
+[![CI](https://github.com/john07180718/task-resource-guard/actions/workflows/ci.yml/badge.svg)](https://github.com/john07180718/task-resource-guard/actions/workflows/ci.yml)
+[MIT 授權](LICENSE) · 初期開發中 · [English](README.md)
 
-- **先做好收尾**：新建私有資源包在 `withOwnedResource`，等待整批工作與正常 close，工作失敗也收尾，保留雙重錯誤。
-- **讓可配合的開發服務自行登記**：只有身分可核對、到期、閒置、沒有工作且明確允許停止的服務，才接受正常關閉請求。CLI 預設 dry-run，零回收是正常結果。
+![Task Resource Guard 流程：管理任務自己的資源、保護進行中的工作、先預覽再正常關閉](docs/assets/overview.svg)
 
-Skill 教代理何時使用這兩種做法；工具不會攔截所有程式，也不會自動接管 MCP 或既有 PID。
+[快速開始](docs/QUICKSTART.zh-TW.md) · [接入服務](skills/task-resource-guard/references/usage.md) · [安裝 Skill](INSTALL.md) · [驗證紀錄](VALIDATION.md)
 
-## 適用範圍
+## 先跑一個獨立範例
 
-登記式清理目前限 Windows、本機磁碟、同一使用者的獨立 Node 開發服務；需 Node.js 與 PowerShell 7，並可讀取必要的 CIM 程序身分。此候選版在 Node 24.16.0／PowerShell 7.6.5 上驗證，未宣稱其他版本皆通過。沒有 npm 依賴、安裝鉤子、API 金鑰或外部 API 呼叫。
-
-`owned-resource.mjs` 僅使用 JavaScript；跨平台尚未實測。Python 請沿用原生 `with`／`async with`，本套件沒有 Python wrapper。
-
-## 先試不接觸現有服務的範例
-
-在套件根目錄執行：
+這份 Windows 入門流程使用 **Node.js 24 與 PowerShell 7，請在未提升權限的終端機執行**。以下下載指令另外需要 Git；無須執行 npm install，也不需要 API 金鑰。
 
 ```powershell
-node .\examples\scoped-resource.mjs
-node --test --test-concurrency=1 .\tests\owned-resource.test.mjs .\tests\cli.test.mjs .\tests\metadata.test.mjs .\tests\registered-cleanup.test.mjs
+git clone https://github.com/john07180718/task-resource-guard.git
+cd task-resource-guard
+node examples/scoped-resource.mjs
 ```
 
-範例只建立自己的本機臨時 listener，正常關閉後退出。測試只啟動合成 child，不使用你的正式程序或憑證；Windows 測試透過 CIM 查詢自己建立的 PID。測試含失敗與競態模擬，不是正式產品整合驗收。
+範例只建立自己的本機 listener，完成模擬工作，再等待正常關閉。預期輸出：
 
-## 明確指定要管理的工作區
+```text
+Private example resource closed normally.
+```
 
-下面都是示範路徑，先換成自己的絕對路徑。`--init` 是明確建立新的私有登記目錄，已存在時拒絕覆蓋；清理命令本身不會自動初始化。
+想看「閒置服務正常關閉、忙碌服務繼續工作」的完整流程，可在 Windows 執行：
 
 ```powershell
-$tool = 'C:\Tools\task-resource-guard\skills\task-resource-guard\scripts\cli.mjs'
-$work = 'C:\Work\my-private-dev-tool'
-$psExe = (Get-Command pwsh.exe -CommandType Application | Select-Object -First 1).Source
-node $tool --workspace $work --powershell $psExe --init
-node $tool --workspace $work --powershell $psExe
+node examples/registered-demo.mjs
 ```
 
-最後一行是預覽，不關閉程序、不修改登記、不寫日誌，但會查詢已登記程序與本機控制管道。初次通常回收候選為零：必須先由你有權修改的服務接上 [登記介面](skills/task-resource-guard/references/usage.md)。
+示範會在新的暫存工作區建立兩個私有 HTTP 服務，先預覽，再關閉符合條件的閒置服務；等另一個服務的請求完成後，才正常關閉它。確認兩個子程序都退出後，移除示範自己的暫存工作區。**示範會對自己建立的服務實際執行清理；一般清理 CLI 仍預設只預覽。**
 
-確認清理範圍且已取得執行授權後，才明確加入 `--apply`。TTL 到期只代表可以檢查，不等於可以停止。服務會在收到停止請求時再次核對忙碌狀態，並拒絕新工作進入。
+![Windows CI 五階段實際輸出重播：預覽、保護忙碌工作、正常關閉並移除示範工作區](docs/assets/demo-replay.gif)
 
-CLI 退出碼：0＝完成預覽／處理（包含沒有合格項目）；1＝無法安全執行；2＝有無效登記、身分不符、關閉失敗或未確認退出等需檢視項目。輸出只含模式與事件計數，不含 capability 或程序完整命令列。
+這是 [Windows CI 通過紀錄](https://github.com/john07180718/task-resource-guard/actions/runs/40108746202/job/120915815964) 的實際輸出，整理成 24 秒重播；播放節奏經過調整，方便閱讀。詳見 [來源與製作說明](docs/assets/README.md)。
 
-## 安裝與移除
+環境準備、各階段結果與排錯方式見 [快速開始](docs/QUICKSTART.zh-TW.md)。執行範例不會安裝 Skill，也不會接管你現有的工具。
 
-見 [INSTALL.md](INSTALL.md)。本機準備不等於已安裝 Skill；沒有改全域規則、桌面按鈕、既有排程或正式工具。排程必須另行選擇，安裝／移除腳本預設也只預覽。
+## 依需求選擇用法
 
-## 安全界線與限制
+| 你想做的事 | 使用方式 | 需要提供什麼 |
+| --- | --- | --- |
+| 任務完成後關閉新建資源 | `withOwnedResource` | 建立資源、等待工作完成、正常關閉的方法 |
+| 清理已閒置的開發服務 | 服務登記＋清理 CLI | 明確所有權、工作追蹤、同步安全判斷、正常關閉方法 |
+| 讓 AI 依照相同流程操作 | 選擇安裝 Skill | 指定技能安裝位置；每個服務仍須個別接入 |
 
-不按 CPU、執行時間、程序名稱或 PID 數量判定工作結束。不強殺、不走程序樹、不接管原有程序、不自動重啟，也不刪除檔案、快取、Cookie、profile、資料庫或備份。
+收尾函式會在工作失敗後繼續嘗試正常關閉；兩邊都失敗時保留兩個錯誤。登記式清理會核對身分、到期時間、閒置狀態及停止條件，關閉前再次檢查，之後確認程序是否真的退出。
 
-服務的 `run()` 與同步 `safeToStop()` 必須真實涵蓋工作、排隊、下載、寫檔及登入狀態。這需要逐個服務設計接入；錯誤的 adapter 仍可能導致中斷。拒絕接入正式、共用或沒有正常關閉方法的服務。
+## 先接入自己的服務，再預覽
 
-私有登記包含路徑、使用者 SID 與控制 capability，不能上傳。狀態目錄限選定工作區的直接子目錄 `.task-resource-guard`，拒絕重新導向，限制 ACL，最多 256 筆；過期紀錄保留待人工檢視。這不是對同一使用者惡意程式的安全沙箱。
+只接入這次任務專用、你有權修改的獨立開發服務。[接入說明](skills/task-resource-guard/references/usage.md) 列出如何追蹤排隊、下載、寫檔與登入；工具無法自行理解所有服務的內部工作。
 
-關閉回呼成功不等於程序已退出；工具另查身分，未確認就回報，不改用強制終止。崩潰、斷電可能無法執行 finally。本套件沒有修復 Codex 本身的記憶體洩漏，沒有保證 RAM、速度或 Token 節省。
+完成服務接入及私有登記目錄初始化後，執行：
 
-詳見 [SECURITY.md](SECURITY.md)、[VALIDATION.md](VALIDATION.md)。
+```powershell
+node skills/task-resource-guard/scripts/cli.mjs --workspace 'C:\Work\my-private-dev-tool'
+```
 
-另附 [貢獻指南](CONTRIBUTING.md)、[尚未標籤的變更](CHANGELOG.md)、[維護方向](docs/ROADMAP.md) 與 [發布檢查表](docs/RELEASE-CHECKLIST.md)。原始碼公開不代表已獲開源支援；目前沒有可宣稱的外部採用數、標籤版本或 GitHub CI 通過紀錄。
+這是預覽。沒有符合條件的服務也是正常結果。確定要請合格服務正常關閉時，才加入 `--apply`。到期只代表可以開始檢查，並不是強制停止期限。
+
+## 適用範圍與必要條件
+
+- **登記式清理：** Windows、本機磁碟、Node.js、PowerShell 7，以及必要的 CIM 程序身分查詢權限。入門流程使用 Node.js 24；實際測過的環境以 [驗證紀錄](VALIDATION.md) 為準。
+- **任務自己的資源：** 主動接入的開發伺服器、測試 worker、自動化控制服務。正式服務、共用資源及任意既有程序不在支援範圍。
+- **正常關閉：** 忙碌、身分不確定或關閉失敗時，只回報而不強制終止。接入程式必須正確追蹤工作，關閉結果也可能無法確認。
+- **私有登記資料：** 工作區的 `.task-resource-guard` 含控制 capability 與本機身分資訊，不要加入 Git 或上傳。
+- **效益與限制：** 尚未量測 RAM、速度、費用或 Token 的節省效果；崩潰與斷電可能無法完成收尾。收尾函式的跨平台驗證情況另列於 [驗證紀錄](VALIDATION.md)。
+
+工具不會接管任意 PID、清除瀏覽器資料、安裝背景輪詢，或修復 Codex 自身的記憶體洩漏。Skill 安裝與選用排程都需另外設定。接入真實服務前，請先閱讀 [安全界線](SECURITY.md)。
+
+## 一起改善下一版
+
+專案仍在初期開發階段。已發布版本請看 [Releases](https://github.com/john07180718/task-resource-guard/releases)；已測項目與未驗證範圍請看 [驗證紀錄](VALIDATION.md)。CI 徽章顯示實際工作流程狀態，範例成功不代表每種產品接入都已驗證。
+
+如果它對你有幫助，歡迎按 **Star** 收藏。試用後可到 [Issues](https://github.com/john07180718/task-resource-guard/issues) 分享執行環境、試了哪個範例或接入方式，以及實際結果。回報請使用去除私密資訊的輸出，不要附上登記資料或憑證。
+
+[貢獻指南](CONTRIBUTING.md) · [維護方向](docs/ROADMAP.md) · [變更紀錄](CHANGELOG.md) · [發布檢查表](docs/RELEASE-CHECKLIST.md) · [原始碼與授權來源](PROVENANCE.md)
+
+本專案為獨立開發，未宣稱獲得 OpenAI、Codex 或其他工具供應商的隸屬或背書。

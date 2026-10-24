@@ -1,5 +1,48 @@
 # 本候選版的驗證
 
+## 試用流程增補：2026-10-24
+
+本次增補保留既有核心程式，新增兩個真實 loopback HTTP child 的登記示範與測試。示範核對預覽保留兩個服務、第一次 apply 只關閉閒置服務、忙碌請求完成後再正常關閉，以及中斷時正常收尾。完整命令：
+
+```powershell
+node --test --test-concurrency=1 tests/owned-resource.test.mjs tests/cli.test.mjs tests/metadata.test.mjs tests/registered-cleanup.test.mjs tests/registered-demo.test.mjs
+```
+
+### GitHub CI 已驗證
+
+Commit [`77fef6c4720ed77ccc4a212ce536bbf2bb957ef0`](https://github.com/john07180718/task-resource-guard/commit/77fef6c4720ed77ccc4a212ce536bbf2bb957ef0) 的 [push CI](https://github.com/john07180718/task-resource-guard/actions/runs/40108746202) 與 [PR CI](https://github.com/john07180718/task-resource-guard/actions/runs/40108749844) 均完成並通過。以下數字取自 push CI 的實際日誌；後續 commit 應另外核對自己的執行結果。
+
+| 環境 | 實際結果 |
+| --- | --- |
+| Windows Server 2022 10.0.20348、Node 24.22.1、PowerShell 7.6.8，一般使用者 | 10 項中 **9 通過、0 失敗、1 項非 Windows 檢查跳過**；測試約 67.7 秒。三項 Windows 整合／示範案例全數執行並通過。 |
+| Ubuntu 24.04、Node 24.21.0 | 9 項中 **7 通過、0 失敗、2 項 Windows 示範跳過**；JavaScript 語法與 scoped-resource 範例通過。 |
+| Windows 執行環境與收尾 | PowerShell 語法通過；已確認一般使用者身分及其新目錄擁有者；scoped-resource 範例正常退出；測試帳號在程序樹完成後移除。 |
+
+Windows [工作日誌](https://github.com/john07180718/task-resource-guard/actions/runs/40108746202/job/120915815964) 實際確認：
+
+- 既有整合測試的七個私有 child 全部正常退出，合成登記目錄移除。
+- 新 HTTP 示範預覽後兩個服務仍可回應，第一次 apply 只關閉閒置服務，忙碌請求仍保持；請求完成後，第二次 apply 才關閉其服務。
+- 示範中斷案例完成自己的未完工作，再正常收尾；兩個 child 的退出與暫存工作區移除均被核對。
+- 沒有以強制終止取代正常收尾。這些數字是測試結果及測試耗時，不是效能改善或採用人數。
+
+### 本機檢查與初輪修正
+
+本機檢視環境為 Linux、Node 24.22.1。使用同程序測試模式 `--test-isolation=none` 實際得到 **7 通過、3 項 Windows 測試跳過、0 失敗**；跳過不算 Windows 通過。這個模式只用於本次受限本機測試環境，CI 使用標準的預設程序隔離。
+
+`examples/scoped-resource.mjs` 在允許本機 loopback listener 的執行環境中正常退出，輸出 `Private example resource closed normally.`。初次在禁止 listener 的沙箱執行遇到 `EPERM`，沒有把環境限制當作成功；取得執行權限後才驗證該範例。此結果只涵蓋這個 Linux／Node 組合下的小型 helper 範例。
+
+另已核對新增 JavaScript 語法、YAML／Issue Forms 結構、Markdown 相對連結與圖片尺寸（1280 × 640）。本機沒有 PowerShell 7 或 Windows，新增 HTTP 示範的兩項 Windows 測試與既有 Windows 整合測試，交由實際 [GitHub CI](https://github.com/john07180718/task-resource-guard/actions/workflows/ci.yml) 驗證。工作流程檔案本身不代表測試已通過。
+
+第一次 [GitHub CI 執行](https://github.com/john07180718/task-resource-guard/actions/runs/40107863803) 的 Linux 工作通過，Windows 工作失敗：metadata 測試無法比對 checkout 後的 frontmatter，三項整合／示範測試在建立登記前被既有的 `noLinks` 路徑檢查拒絕。增補 `.gitattributes` 固定文字檔為 LF；Windows CI 選定實際本機暫存根目錄並核對後，才建立自己的測試目錄。示範同樣先選定並驗證實際暫存根目錄，以處理 Windows TEMP 可能使用別名的情況。核心的連結／重新導向拒絕條件與測試判定均保留。修正後的 Windows 結果須以後續執行紀錄為準。
+
+第二次 [GitHub CI 執行](https://github.com/john07180718/task-resource-guard/actions/runs/40108221428) 已通過 metadata 與路徑準備，日誌確認原 TEMP 是路徑別名；三項 Windows 測試接著在登記子目錄的 owner 驗證被拒絕。GitHub 的 Windows hosted runner [以管理員身分且關閉 UAC 執行](https://docs.github.com/en/actions/reference/runners/github-hosted-runners#administrative-privileges)，這與工具要求個人使用者擁有新登記檔案的情境不同。CI 因此將整套測試放在該次拋棄式 VM 新建的一般帳戶下執行，先核對非管理員身分及新檔案擁有者；不放寬核心 ACL 條件，也不事後修補登記的權限。README 與快速開始已明確要求未提升權限的終端機。管理員／群組擁有者情境仍是已知限制，不能用一般帳戶的通過結果推定相容。
+
+後續文件提交 `c3408b14dce451ec43f5d482cc5cee7e7a3666bb` 的 [PR CI 通過](https://github.com/john07180718/task-resource-guard/actions/runs/40109221599)，但 [push CI](https://github.com/john07180718/task-resource-guard/actions/runs/40109217289) 的既有整合測試收到 CLI code 1，而非預期的警示 code 2；新 HTTP 示範與中斷收尾均通過。兩台測試機都使用 Node 24.21.0、PowerShell 7.6.6 及相同 runner image，不能歸因於版本差異。CLI 會隱藏內部例外，該次日誌不足以證明精確原因。檢視發現測試在已關閉 child 後仍批次查詢其數字 PID，並假設它持續空缺；這個前提不可靠。因此把 CLI、junction 與跨工作區預覽檢查移到七個 fixture 都存活時執行，之後用原始 ChildProcess 的退出碼及 signal 核對退出，只查詢六個仍存活的 child。原有 code 2、身分、capability、忙碌保護與正常收尾斷言均保留，另確認 CLI 預覽後登記未變、七個 child 仍存活。沒有加入重試、接受 code 1 或跳過整合測試。這是排除可避免測試競態的修正，不把尚未證實的 PID 重用推測當作已觀察事實。最新提交結果請核對 [PR 檢查](https://github.com/john07180718/task-resource-guard/pull/1/checks) 與 [Actions](https://github.com/john07180718/task-resource-guard/actions/workflows/ci.yml)。
+
+發布版本、repository Topics、Social preview 與宣傳草稿各有獨立狀態；不由測試結果推定已完成。沒有新增效能、RAM、費用、Token 或外部採用數據。
+
+## 原始來源候選版：2026-10-24 Windows 驗證紀錄
+
 日期：2026-10-24；Windows 10.0.26300、Node 24.16.0、PowerShell Core 7.6.5。這是本次獨立候選套件的驗證，不能替代每個產品的 adapter 驗收。
 
 ## 已執行

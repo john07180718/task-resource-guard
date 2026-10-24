@@ -1,0 +1,6 @@
+# Keep checked-in text identical on Windows and Unix checkouts.
+* text=auto eol=lf
+
+# Artwork must keep its original bytes.
+*.png binary
+*.gif binary

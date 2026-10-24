@@ -2,6 +2,8 @@
 
 本套件採 MIT，見 LICENSE。以下是選擇安裝的操作說明；公開原始碼不代表已替任何使用者安裝 Skill、改全域規則或建立排程。
 
+第一次使用，請先閱讀 [快速開始](docs/QUICKSTART.zh-TW.md)／[English quick start](docs/QUICKSTART.md)。跑範例、安裝 Skill、接入自己的服務是三個獨立步驟，可先試範例再決定後續設定。
+
 ## 不安裝也能檢查
 
 在套件根目錄執行 README 的範例與隔離測試即可。這不會建立全域 Skill、全域規則、排程或常駐清理器。Node／PowerShell 需由使用者既有環境提供，不自動下載或變更執行原則。

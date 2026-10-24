@@ -1,0 +1,49 @@
+name: Usage feedback / 試用回饋
+description: Tell us what you tried, what worked, and where integration became difficult.
+title: '[Feedback] '
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Feedback is voluntary; using the tool does not require a report or a Star. English or 繁體中文 is welcome.
+        This report is public. Share only a general use case, never registration files, capabilities, SIDs, credentials or private project paths.
+  - type: dropdown
+    id: stage
+    attributes:
+      label: How far did you get? / 目前使用到哪一步？
+      options:
+        - Read the documentation only / 只有閱讀文件
+        - Tried an example but could not complete it / 範例尚未跑成功
+        - Completed an example / 已跑完範例
+        - Integrated my own development service / 已接入自己的開發服務
+        - Still using it after at least one week / 至少一週後仍持續使用
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit / 版本或 commit
+      description: Optional if you only read the documentation.
+    validations:
+      required: false
+  - type: textarea
+    id: use-case
+    attributes:
+      label: What were you trying to do? / 想解決什麼問題？
+      description: Describe the type of development service and your goal. No company or private repository name is needed.
+    validations:
+      required: true
+  - type: textarea
+    id: friction
+    attributes:
+      label: What worked or got in the way? / 有用的地方或遇到的卡點
+      description: Was any command, prerequisite or integration step unclear? What would make the next step easier?
+    validations:
+      required: true
+  - type: checkboxes
+    id: quotation
+    attributes:
+      label: Optional case-study permission / 選填的案例引用同意
+      options:
+        - label: The maintainer may quote this feedback with my GitHub username in this project's documentation. / 同意維護者在本專案文件引用這份回饋並標示我的 GitHub 帳號。
+          required: false

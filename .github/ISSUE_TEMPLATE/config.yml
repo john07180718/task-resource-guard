@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Security reporting / 資安回報
+    url: https://github.com/john07180718/task-resource-guard/security/policy
+    about: Follow the private reporting instructions for sensitive issues; do not include secrets in a public issue.
