@@ -12,7 +12,9 @@ node --test --test-concurrency=1 tests/owned-resource.test.mjs tests/cli.test.mj
 
 `examples/scoped-resource.mjs` 在允許本機 loopback listener 的執行環境中正常退出，輸出 `Private example resource closed normally.`。初次在禁止 listener 的沙箱執行遇到 `EPERM`，沒有把環境限制當作成功；取得執行權限後才驗證該範例。此結果只涵蓋這個 Linux／Node 組合下的小型 helper 範例。
 
-另已核對新增 JavaScript 語法、YAML／Issue Forms 結構、Markdown 相對連結與圖片尺寸（1280 × 640）。本機沒有 PowerShell 7 或 Windows，新增 HTTP 示範的兩項 Windows 測試與既有 Windows 整合測試，仍須查看實際 [GitHub CI](https://github.com/john07180718/task-resource-guard/actions/workflows/ci.yml) 的完成結果。工作流程檔案本身不代表測試已通過。
+另已核對新增 JavaScript 語法、YAML／Issue Forms 結構、Markdown 相對連結與圖片尺寸（1280 × 640）。本機沒有 PowerShell 7 或 Windows，新增 HTTP 示範的兩項 Windows 測試與既有 Windows 整合測試，交由實際 [GitHub CI](https://github.com/john07180718/task-resource-guard/actions/workflows/ci.yml) 驗證。工作流程檔案本身不代表測試已通過。
+
+第一次 [GitHub CI 執行](https://github.com/john07180718/task-resource-guard/actions/runs/40107863803) 的 Linux 工作通過，Windows 工作失敗：metadata 測試無法比對 checkout 後的 frontmatter，三項整合／示範測試在建立登記前被既有的 `noLinks` 路徑檢查拒絕。增補 `.gitattributes` 固定文字檔為 LF；Windows CI 選定實際本機暫存根目錄並核對後，才建立自己的測試目錄。示範同樣先選定並驗證實際暫存根目錄，以處理 Windows TEMP 可能使用別名的情況。核心的連結／重新導向拒絕條件與測試判定均保留。修正後的 Windows 結果須以後續執行紀錄為準。
 
 發布版本、repository Topics、Social preview 與宣傳草稿各有獨立狀態；不由測試結果推定已完成。沒有新增效能、RAM、費用、Token 或外部採用數據。
 

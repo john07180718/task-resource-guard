@@ -69,6 +69,30 @@ jobs:
           $PSVersionTable.PSVersion.ToString()
           $psExe = (Get-Command pwsh.exe -CommandType Application | Select-Object -First 1).Source
           "TRG_TEST_POWERSHELL=$psExe" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+      - name: Select a canonical job-owned temporary directory
+        run: |
+          @'
+          import fs from 'node:fs/promises';
+          import os from 'node:os';
+          import path from 'node:path';
+          import { noLinks } from './skills/task-resource-guard/scripts/common.mjs';
+          try {
+            if (!process.env.RUNNER_TEMP || !process.env.GITHUB_ENV) throw Error('Missing runner configuration');
+            const supplied = path.resolve(process.env.RUNNER_TEMP);
+            const canonical = await fs.realpath(supplied);
+            await noLinks(canonical);
+            const temporary = await fs.mkdtemp(path.join(canonical, 'trg-ci-'));
+            await noLinks(temporary);
+            const previousTemporary = path.resolve(os.tmpdir());
+            const previousCanonical = await fs.realpath(previousTemporary);
+            console.log('Default temp path alias: ' + (previousTemporary.toLowerCase() !== previousCanonical.toLowerCase()));
+            await fs.appendFile(process.env.GITHUB_ENV, 'TEMP=' + temporary + '\nTMP=' + temporary + '\n', 'utf8');
+            console.log('Runner temp path: ' + (supplied.toLowerCase() === canonical.toLowerCase() ? 'canonical' : 'alias canonicalized') + '; fresh job-owned directory verified.');
+          } catch {
+            console.error('Unable to prepare a verified job-owned temporary directory. Core path checks remain enforced.');
+            process.exitCode = 1;
+          }
+          '@ | node --input-type=module
       - name: Check PowerShell syntax
         run: |
           $syntaxFailed = $false

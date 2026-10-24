@@ -9,6 +9,8 @@ The [CI workflow](../.github/workflows/ci.yml) runs on branch pushes, pull reque
 
 The workflow selects the actual `pwsh.exe` path for `TRG_TEST_POWERSHELL`. Windows tests create only their own synthetic children and registry. Passing them does not establish compatibility with every Windows version, permission setup or third-party adapter. Optional scheduled-task installation and real product integrations are outside this workflow.
 
+Before Windows tests run, CI resolves `RUNNER_TEMP` to its canonical path, verifies it with the toolkit's existing `noLinks` check, and creates a fresh job-owned child directory. It verifies that child too, then sets `TEMP` and `TMP` for subsequent steps through `GITHUB_ENV`. This avoids a runner's short-path temporary-directory alias without weakening the toolkit's rejection of linked or redirected workspaces. Diagnostics report whether the previous default temporary path differed from its canonical path, and whether the runner path was canonical or an alias; they do not print either path. Test teardown continues to close its synthetic children normally and remove only its own temporary workspace; the enclosing job directory belongs to the disposable hosted runner.
+
 ## Check actual results
 
 Open [Actions → CI](https://github.com/john07180718/task-resource-guard/actions/workflows/ci.yml), choose a run for the commit you are reviewing, and inspect both jobs. The logs record the selected runtime versions. A workflow file or badge alone is not a claim that a run passed; current evidence belongs in [VALIDATION.md](../VALIDATION.md).

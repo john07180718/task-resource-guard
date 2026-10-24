@@ -125,11 +125,16 @@ export async function runDemo({ powershell = 'pwsh.exe', report = console.log, s
   const checkAbort = () => { if (signal?.aborted) throw interrupted(); };
   checkAbort();
   const children = [];
-  let workspace, heldRequest, primaryError, completed = false;
+  let temporaryRoot, workspace, heldRequest, primaryError, completed = false;
   const finishChildren = () => { for (const record of children) send(record, 'finish'); };
   signal?.addEventListener('abort', finishChildren);
   try {
-    workspace = await fs.mkdtemp(path.join(os.tmpdir(), prefix));
+    // Windows may expose TEMP through an 8.3 alias. Choose the canonical
+    // existing root before creating our new directory, then keep the core's
+    // strict no-links check on that selected path and all of its ancestors.
+    temporaryRoot = await fs.realpath(os.tmpdir());
+    await noLinks(temporaryRoot);
+    workspace = await fs.mkdtemp(path.join(temporaryRoot, prefix));
     const ctx = await context({ workspace, powershell });
     await initialize(ctx);
     await fs.copyFile(fileURLToPath(fixture), path.join(workspace, 'registered-service.mjs'));
@@ -198,7 +203,7 @@ export async function runDemo({ powershell = 'pwsh.exe', report = console.log, s
     if (workspace) {
       try {
         requireCondition(children.every(record => record.closed), 'Demo exits are unconfirmed; preserving the temporary workspace.');
-        requireCondition(path.dirname(workspace).toLowerCase() === path.resolve(os.tmpdir()).toLowerCase() && path.basename(workspace).startsWith(prefix), 'Unexpected demo directory; refusing removal.');
+        requireCondition(path.dirname(workspace).toLowerCase() === path.resolve(temporaryRoot).toLowerCase() && path.basename(workspace).startsWith(prefix), 'Unexpected demo directory; refusing removal.');
         await noLinks(workspace);
         // This is exclusively the newly created synthetic directory. The
         // cleanup toolkit itself never deletes a user's registry or files.
