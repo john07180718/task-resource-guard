@@ -81,22 +81,11 @@ test('Windows isolated registry safety and real private-child normal shutdown', 
       socket.once('close', resolve);
     });
     assert.equal(expired.closed, false);
-    const applied = await cleanup(ctx, { apply: true });
-    assert.equal(applied.filter(record => record.event === 'exit-confirmed').length, 1);
-    assert.ok(applied.some(record => record.id === expired.id && record.event === 'exit-confirmed'));
-    assert.ok(applied.some(record => record.id === busy.id && record.reason === 'busy'));
-    assert.ok(applied.some(record => record.id === future.id && record.event === 'not-expired'));
-    assert.ok(applied.some(record => record.id === mismatch.id && record.event === 'identity-mismatch-skip'));
-    assert.ok(applied.some(record => record.id === race.id && record.reason === 'busy'));
-    assert.ok(applied.some(record => record.id === closeFailure.id && record.reason === 'close-failed-no-force'));
-    assert.ok(applied.some(record => record.id === asyncResult.id && record.reason === 'blocked'));
-    const still = await inspect(ctx, children.map(record => record.child.pid));
-    assert.equal(still.has(expired.child.pid), false);
-    for (const record of [busy, future, unregistered, race, closeFailure, asyncResult]) assert.equal(still.has(record.child.pid), true, record.mode);
-    assert.ok(expired.messages.some(message => message.gateRejected));
-    t.diagnostic('Only eligible child exited. Busy/future/unregistered/raced/failed-close/invalid-Promise children survived; new work was gated before shutdown.');
 
     // Actual CLI with no mode flag remains dry-run and prints no capability.
+    // Keep preview-only assertions before apply, while all fixture PIDs are
+    // still owned by live children. An exited child's numeric PID may later
+    // be reused; a CLI warning test must not depend on it remaining unused.
     let cli;
     try { cli = await exec(process.execPath, [fileURLToPath(new URL('cli.mjs', source)), '--workspace', workspace, '--powershell', powershell], { windowsHide: true }); }
     catch (error) {
@@ -108,6 +97,9 @@ test('Windows isolated registry safety and real private-child normal shutdown', 
     assert.equal(report.mode, 'dry-run');
     assert.equal(report.counts['identity-mismatch-skip'], 1);
     for (const record of records) assert.equal(cli.stdout.includes(record.capability), false);
+    assert.deepEqual(await snapshot(), before);
+    assert.equal((await inspect(ctx, children.map(record => record.child.pid))).size, children.length);
+    for (const record of children) assert.equal(record.closed, false, record.mode);
 
     const link = path.join(workspace, 'redirected');
     await fs.symlink(ctx.state, link, 'junction');
@@ -118,6 +110,26 @@ test('Windows isolated registry safety and real private-child normal shutdown', 
     await fs.writeFile(path.join(ctx.state, 'services', unsafe.id + '.json'), JSON.stringify(unsafe), { flag: 'wx' });
     assert.ok((await cleanup(ctx)).some(record => record.id === unsafe.id && record.event === 'invalid-registration'));
     t.diagnostic('CLI preview, capability authentication, real junction rejection and cross-workspace registration rejection passed.');
+
+    const applied = await cleanup(ctx, { apply: true });
+    assert.equal(applied.filter(record => record.event === 'exit-confirmed').length, 1);
+    assert.ok(applied.some(record => record.id === expired.id && record.event === 'exit-confirmed'));
+    assert.ok(applied.some(record => record.id === busy.id && record.reason === 'busy'));
+    assert.ok(applied.some(record => record.id === future.id && record.event === 'not-expired'));
+    assert.ok(applied.some(record => record.id === mismatch.id && record.event === 'identity-mismatch-skip'));
+    assert.ok(applied.some(record => record.id === race.id && record.reason === 'busy'));
+    assert.ok(applied.some(record => record.id === closeFailure.id && record.reason === 'close-failed-no-force'));
+    assert.ok(applied.some(record => record.id === asyncResult.id && record.reason === 'blocked'));
+    // Confirm the original child's real exit, rather than requiring its freed
+    // PID to stay absent during unrelated later CIM queries.
+    await expired.ended;
+    assert.equal(expired.exit.code, 0);
+    assert.equal(expired.exit.signal, null);
+    const survivors = [busy, future, unregistered, race, closeFailure, asyncResult];
+    const still = await inspect(ctx, survivors.map(record => record.child.pid));
+    for (const record of survivors) assert.equal(still.has(record.child.pid), true, record.mode);
+    assert.ok(expired.messages.some(message => message.gateRejected));
+    t.diagnostic('Only eligible child exited. Busy/future/unregistered/raced/failed-close/invalid-Promise children survived; new work was gated before shutdown.');
   } catch (error) { primaryError = error; }
   finally {
     const cleanupErrors = [];

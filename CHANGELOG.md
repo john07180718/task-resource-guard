@@ -11,6 +11,7 @@ The proposed first pre-release is `v0.1.0-alpha.1`, subject to the release check
 - Added tests for the full Windows demo, normal teardown after interruption, and rejection before resource creation on unsupported platforms.
 - Added a read-only GitHub Actions workflow for Linux helper checks and Windows integration, plus guided bug-report and voluntary usage-feedback forms.
 - Fixed LF checkout consistency and canonical temporary paths in the demonstration/CI; Windows CI runs under a verified temporary standard account while retaining the core ownership checks.
+- Made existing integration fixtures deterministic around process exit: preview checks run while all fixture processes are alive, and later exit checks use the original child handle rather than assuming its PID remains unused.
 - Added original SVG/PNG project artwork, a labeled replay of verified Windows CI output, prepared pre-release notes, repository setup instructions and promotion drafts. These files do not apply settings, publish releases or send messages.
 
 ### Initial toolkit

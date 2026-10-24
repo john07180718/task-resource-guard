@@ -37,6 +37,8 @@ Windows [工作日誌](https://github.com/john07180718/task-resource-guard/actio
 
 第二次 [GitHub CI 執行](https://github.com/john07180718/task-resource-guard/actions/runs/40108221428) 已通過 metadata 與路徑準備，日誌確認原 TEMP 是路徑別名；三項 Windows 測試接著在登記子目錄的 owner 驗證被拒絕。GitHub 的 Windows hosted runner [以管理員身分且關閉 UAC 執行](https://docs.github.com/en/actions/reference/runners/github-hosted-runners#administrative-privileges)，這與工具要求個人使用者擁有新登記檔案的情境不同。CI 因此將整套測試放在該次拋棄式 VM 新建的一般帳戶下執行，先核對非管理員身分及新檔案擁有者；不放寬核心 ACL 條件，也不事後修補登記的權限。README 與快速開始已明確要求未提升權限的終端機。管理員／群組擁有者情境仍是已知限制，不能用一般帳戶的通過結果推定相容。
 
+後續文件提交 `c3408b14dce451ec43f5d482cc5cee7e7a3666bb` 的 [PR CI 通過](https://github.com/john07180718/task-resource-guard/actions/runs/40109221599)，但 [push CI](https://github.com/john07180718/task-resource-guard/actions/runs/40109217289) 的既有整合測試收到 CLI code 1，而非預期的警示 code 2；新 HTTP 示範與中斷收尾均通過。兩台測試機都使用 Node 24.21.0、PowerShell 7.6.6 及相同 runner image，不能歸因於版本差異。CLI 會隱藏內部例外，該次日誌不足以證明精確原因。檢視發現測試在已關閉 child 後仍批次查詢其數字 PID，並假設它持續空缺；這個前提不可靠。因此把 CLI、junction 與跨工作區預覽檢查移到七個 fixture 都存活時執行，之後用原始 ChildProcess 的退出碼及 signal 核對退出，只查詢六個仍存活的 child。原有 code 2、身分、capability、忙碌保護與正常收尾斷言均保留，另確認 CLI 預覽後登記未變、七個 child 仍存活。沒有加入重試、接受 code 1 或跳過整合測試。這是排除可避免測試競態的修正，不把尚未證實的 PID 重用推測當作已觀察事實。最新提交結果請核對 [PR 檢查](https://github.com/john07180718/task-resource-guard/pull/1/checks) 與 [Actions](https://github.com/john07180718/task-resource-guard/actions/workflows/ci.yml)。
+
 發布版本、repository Topics、Social preview 與宣傳草稿各有獨立狀態；不由測試結果推定已完成。沒有新增效能、RAM、費用、Token 或外部採用數據。
 
 ## 原始來源候選版：2026-10-24 Windows 驗證紀錄
