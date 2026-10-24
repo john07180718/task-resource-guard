@@ -1,6 +1,6 @@
 # Contributing
 
-This source candidate is [MIT licensed](LICENSE). Use [GitHub Issues](https://github.com/john07180718/task-resource-guard/issues) for general questions and synthetic bug reports. There is no promised response time or tagged release yet.
+This early development project is [MIT licensed](LICENSE). Use the [Issue forms](https://github.com/john07180718/task-resource-guard/issues/new/choose) for synthetic bug reports or voluntary usage feedback. There is no promised response time; published versions are listed in [Releases](https://github.com/john07180718/task-resource-guard/releases).
 
 ## Scope
 
@@ -13,10 +13,14 @@ Do not add a new cloud service, dependency, telemetry, scheduler, paid API or in
 Use Node 24 and PowerShell 7 for the currently tested Windows path. There is no package installation step. From the repository root:
 
 ```powershell
-node --test --test-concurrency=1 .\tests\owned-resource.test.mjs .\tests\cli.test.mjs .\tests\metadata.test.mjs .\tests\registered-cleanup.test.mjs
+node --test --test-concurrency=1 .\tests\owned-resource.test.mjs .\tests\cli.test.mjs .\tests\metadata.test.mjs .\tests\registered-cleanup.test.mjs .\tests\registered-demo.test.mjs
 ```
 
 Read the fixture before running it. The integration test starts its own synthetic children and confirms they exit normally. Never substitute real credentials, production tools or another session's services. Do not introduce a force-kill fallback when teardown fails; preserve the evidence and report unconfirmed release.
+
+The registered-demo tests also exercise the complete HTTP walkthrough and interruption teardown. On non-Windows systems those integration cases are skipped; the unsupported-platform guard is tested instead. See [CI](docs/CI.md) for the runner matrix and [quick start](docs/QUICKSTART.md) for the interactive examples.
+
+For new contributors, documentation clarity and focused example explanations are useful small tasks. Use `good first issue` only for a real, well-defined task with an observable completion condition. Service ownership, work tracking and shutdown behavior need careful implementation review.
 
 For a focused change, run the smallest relevant checks. Before a release, run the complete command above on Windows and inspect the working differences. A skipped Windows integration test on another OS is not a Windows pass.
 

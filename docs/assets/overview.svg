@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640" role="img" aria-labelledby="title description">
+  <title id="title">Task Resource Guard — finish the work, close what you own</title>
+  <desc id="description">Illustration of cooperative cleanup: a verified idle development service can close normally, while a busy service keeps running. Windows, Node.js, opt-in registration. This is an explanatory graphic, not a screenshot or benchmark.</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#0b1425"/>
+      <stop offset="1" stop-color="#142942"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#71f3d0"/>
+      <stop offset="1" stop-color="#26bea8"/>
+    </linearGradient>
+  </defs>
+  <rect width="1280" height="640" fill="url(#background)"/>
+  <path d="M960 -50L1300 290M1000 -80L1340 260M1040 -110L1380 230" stroke="#274663" stroke-width="1" opacity=".45"/>
+  <circle cx="1195" cy="520" r="210" fill="none" stroke="#244058" stroke-width="1"/>
+  <circle cx="1195" cy="520" r="176" fill="none" stroke="#244058" stroke-width="1"/>
+  <g font-family="DejaVu Sans, Arial, sans-serif">
+    <rect x="58" y="51" width="43" height="43" rx="12" fill="url(#accent)"/>
+    <path d="M70 73l6 6 13-15" stroke="#0b1425" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="118" y="80" font-size="24" font-weight="700" fill="#f1f7ff">Task Resource Guard</text>
+    <text x="58" y="149" font-size="12" font-weight="700" letter-spacing="3.1" fill="#71f3d0">TASK-OWNED DEVELOPMENT SERVICES</text>
+    <text x="54" y="234" font-size="62" font-weight="700" letter-spacing="-2.7" fill="#f4f8ff">Finish the work.</text>
+    <text x="54" y="313" font-size="62" font-weight="700" letter-spacing="-2.7" fill="#f4f8ff">Close what you own.</text>
+    <text x="58" y="369" font-size="21" fill="#b5c8dc">Graceful cleanup for your Node.js dev tools.</text>
+    <text x="58" y="403" font-size="21" fill="#b5c8dc">Let the service confirm when it is safe to stop.</text>
+    <g font-size="14" font-weight="600" fill="#c7d7e7">
+      <rect x="58" y="445" width="111" height="37" rx="18.5" fill="#1b3048" stroke="#33516c"/>
+      <text x="78" y="469">Windows</text>
+      <rect x="181" y="445" width="104" height="37" rx="18.5" fill="#1b3048" stroke="#33516c"/>
+      <text x="203" y="469">Node.js</text>
+      <rect x="297" y="445" width="92" height="37" rx="18.5" fill="#1b3048" stroke="#33516c"/>
+      <text x="318" y="469">Opt-in</text>
+      <rect x="401" y="445" width="72" height="37" rx="18.5" fill="#1b3048" stroke="#33516c"/>
+      <text x="423" y="469">MIT</text>
+    </g>
+    <rect x="760" y="155" width="460" height="329" rx="20" fill="#102139" stroke="#36516b"/>
+    <text x="788" y="191" font-size="12" font-weight="700" letter-spacing="1.9" fill="#98b2cc">COOPERATIVE CLEANUP</text>
+    <line x1="788" y1="211" x2="1192" y2="211" stroke="#304a63"/>
+    <rect x="788" y="235" width="404" height="86" rx="12" fill="#123831" stroke="#2e7161"/>
+    <circle cx="813" cy="262" r="5" fill="#72f2c5"/>
+    <text x="830" y="268" font-size="17" font-weight="700" fill="#e5fff5">Idle + verified</text>
+    <text x="809" y="298" font-size="15" fill="#a9ddce">Eligible for normal shutdown</text>
+    <path d="M1149 274l8 8 15-18" stroke="#72f2c5" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="788" y="337" width="404" height="86" rx="12" fill="#283144" stroke="#56617a"/>
+    <circle cx="813" cy="364" r="5" fill="#f3ca79"/>
+    <text x="830" y="370" font-size="17" font-weight="700" fill="#fff7e8">Work in progress</text>
+    <text x="809" y="400" font-size="15" fill="#c5cfdf">Preserved until the work is done</text>
+    <path d="M1153 365v20m12-20v20" stroke="#f3ca79" stroke-width="3" stroke-linecap="round"/>
+    <text x="788" y="456" font-size="13" fill="#9db3c8">Preview first. Apply only when ready.</text>
+    <line x1="58" y1="539" x2="1220" y2="539" stroke="#2b435c"/>
+    <text x="58" y="581" font-size="16" fill="#b8cce0">Explicit ownership</text>
+    <circle cx="233" cy="576" r="2.5" fill="#4c6a83"/>
+    <text x="251" y="581" font-size="16" fill="#b8cce0">Busy-work protection</text>
+    <circle cx="451" cy="576" r="2.5" fill="#4c6a83"/>
+    <text x="469" y="581" font-size="16" fill="#b8cce0">No force termination</text>
+    <text x="1220" y="581" text-anchor="end" font-size="14" fill="#7fa2c2">github.com/john07180718/task-resource-guard</text>
+  </g>
+</svg>

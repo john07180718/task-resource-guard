@@ -1,87 +1,80 @@
 # Task Resource Guard
 
-Help task-private development tools finish their work and close their own resources normally.
+**Finish the work. Close the resources your task owns.**
 
-[繁體中文](README.zh-TW.md) · [Installation](INSTALL.md) · [Integration](skills/task-resource-guard/references/usage.md) · [Test evidence](VALIDATION.md)
+A JavaScript resource helper, an opt-in Windows Node service adapter, and an AI Skill for development tools that need a clear end to their work. Preview eligible services, protect unfinished work, and request normal shutdown.
 
-**MIT licensed. Initial source candidate; no tagged release yet.** See [LICENSE](LICENSE) and [PROVENANCE.md](PROVENANCE.md). This is an independent project, with no claimed affiliation or endorsement by OpenAI, Codex or any other tool vendor.
+[![CI](https://github.com/john07180718/task-resource-guard/actions/workflows/ci.yml/badge.svg)](https://github.com/john07180718/task-resource-guard/actions/workflows/ci.yml)
+[MIT license](LICENSE) · Early development · [繁體中文](README.zh-TW.md)
 
-## The problem
+![Task Resource Guard overview: task-owned resources, busy work protected, preview before normal shutdown](docs/assets/overview.svg)
 
-An AI-assisted development session can create preview servers, test workers and automation tools. If their lifecycle is unclear, they may remain after the job finishes. Closing everything called `node` or a browser name can interrupt another project, a pending write or a login.
+[Quick start](docs/QUICKSTART.md) · [Integrate a service](skills/task-resource-guard/references/usage.md) · [Install the Skill](INSTALL.md) · [Validation](VALIDATION.md)
 
-Task Resource Guard makes ownership and unfinished work explicit. It offers a small lifecycle helper and an opt-in service adapter, plus a Skill that tells an agent when each is appropriate.
+## Try it with resources created just for the demo
 
-## What you get
-
-| Component | What it does |
-| --- | --- |
-| `withOwnedResource` | Awaits work, then awaits one normal close. Failed work still triggers close; two failures retain both errors. |
-| Cooperative service registration | A Windows Node development service registers itself, exposes its real work state and supplies its normal shutdown callback. |
-| Cleanup CLI | Defaults to dry-run. Apply requires verified identity, expiration, idleness and a synchronous safety check, with checks repeated before shutdown. |
-| Skill | Guides task-private ownership, busy-work protection, verification and honest reporting. |
-
-This can make resource lifetimes predictable and reduce the need to guess which development processes are disposable. There is no measured promise of RAM, speed, cost or token savings.
-
-## Try the isolated example
-
-From the package root, using an existing Node installation:
+For the documented Windows walkthrough, use **Node.js 24 and PowerShell 7**. Git is needed for the clone command; no npm install or API key is required.
 
 ```powershell
-node .\examples\scoped-resource.mjs
+git clone https://github.com/john07180718/task-resource-guard.git
+cd task-resource-guard
+node examples/scoped-resource.mjs
 ```
 
-It creates a new private loopback listener, performs synthetic work and awaits normal close. It does not connect to external services, install anything or adopt existing processes.
+The small example creates a private loopback listener, completes synthetic work, and awaits its normal close. Expected output:
 
-Run the relevant offline tests:
+```text
+Private example resource closed normally.
+```
+
+To see registered cleanup protect busy work on Windows:
 
 ```powershell
-node --test --test-concurrency=1 .\tests\owned-resource.test.mjs .\tests\cli.test.mjs .\tests\metadata.test.mjs .\tests\registered-cleanup.test.mjs
+node examples/registered-demo.mjs
 ```
 
-The Windows integration test creates only its own synthetic children and private registry, exercises failure cases, then confirms normal exit. It uses CIM for the selected PIDs. Read [VALIDATION.md](VALIDATION.md) for results and untested conditions.
+The walkthrough creates two private HTTP services in a fresh temporary workspace. It previews both, closes the eligible idle service, finishes the busy service's request, then closes that service normally. It removes its own temporary workspace after confirming both children have exited. **This demo applies cleanup only to its own services; the general cleanup CLI still defaults to dry-run.**
 
-## Preview registered services
+See the [step-by-step guide](docs/QUICKSTART.md) for prerequisites, expected stages, and troubleshooting. Running an example does not install the Skill or connect your existing tools.
 
-Registration is opt-in; downloading this project does not register or close your tools. First review the [adapter contract](skills/task-resource-guard/references/usage.md). Only integrate a development service you own and are authorized to modify.
+## Choose how to use it
 
-These example paths must be replaced with an existing local workspace containing that service's entry point:
+| Your goal | Use this | What you provide |
+| --- | --- | --- |
+| Close a new resource after a task | `withOwnedResource` | Resource creation, awaited work, and a normal close callback |
+| Clean up an idle development service | Service registration + cleanup CLI | Explicit ownership, tracked work, a synchronous safety check, and normal shutdown |
+| Give an AI agent the same workflow | Optional Skill installation | A selected Skill location; each service still needs its own integration |
+
+The helper attempts normal close even when work fails, and retains both errors if work and close fail. Registered cleanup checks service identity, expiration, idleness, and readiness again before shutdown, then checks whether the process exited.
+
+## Preview first, integrate explicitly
+
+Register only a task-private development service you own and can modify. The [adapter guide](skills/task-resource-guard/references/usage.md) explains how to track queues, downloads, writes, and logins; the tool cannot infer those states for you.
+
+Once your service is integrated and its private registry is initialized:
 
 ```powershell
-$tool = '.\skills\task-resource-guard\scripts\cli.mjs'
-$work = 'C:\Work\my-private-dev-tool'
-$psExe = (Get-Command pwsh.exe -CommandType Application | Select-Object -First 1).Source
-
-# Explicit setup of a new private registry. Existing directories are not adopted.
-node $tool --workspace $work --powershell $psExe --init
-
-# Default: inspect only, with no shutdown request, registry writes or logs.
-node $tool --workspace $work --powershell $psExe
+node skills/task-resource-guard/scripts/cli.mjs --workspace 'C:\Work\my-private-dev-tool'
 ```
 
-An empty result is expected until an eligible service registers itself. A synthetic example of a preview result is:
+This is a preview. Zero eligible services is a valid result. Add `--apply` only when you intend to request normal shutdown of eligible registered services. Expiration permits checks; it is never a forced-stop deadline.
 
-```json
-{"mode":"dry-run","counts":{"would-request-shutdown":1}}
-```
+## Scope and requirements
 
-This reports a candidate, not an exited process. Only after reviewing scope and authorizing cleanup should you add `--apply`. A service's TTL is a minimum eligibility condition, not a forced termination deadline.
+- **Registered cleanup:** Windows, local disk, Node.js, PowerShell 7, and the required CIM identity queries. Use the Node.js 24 setup in the quick start; [validation](VALIDATION.md) lists the environments actually checked.
+- **Task-private resources:** development servers, test workers, and automation controllers that opt in. Production services, shared resources, and arbitrary existing processes are outside the supported scope.
+- **Normal shutdown:** busy, uncertain, or failed-close cases are reported without force termination. Correct adapter integration is essential; shutdown may remain unconfirmed.
+- **Private state:** keep the workspace's `.task-resource-guard` directory out of Git and uploads. It contains control capabilities and local identity information.
+- **Honest limits:** no measured RAM, speed, cost, or token savings are claimed. Crashes or power loss can prevent cleanup. Platform evidence for the JavaScript helper is listed separately in [validation](VALIDATION.md).
 
-Exit codes: `0` means the pass completed, including zero eligible services; `1` means it could not run safely; `2` means an invalid registration, identity mismatch, failed/blocked close or unconfirmed exit requires review. Output contains mode and event counts, not capabilities or command lines.
+The toolkit does not adopt arbitrary PIDs, clear browser data, install background polling, or repair Codex's own memory leaks. Scheduling and Skill installation are separate choices. Read the [security boundaries](SECURITY.md) before integrating a real service.
 
-## Requirements and limits
+## Help improve the next version
 
-- Registered cleanup: Windows, local disk, an existing Node installation and PowerShell 7, plus access to the required CIM identity queries. Tested on Windows build 26300, Node 24.16.0 and PowerShell 7.6.5. Other combinations are unverified.
-- The scoped helper uses JavaScript only; cross-platform operation has not been tested. Python should use its native context managers; no Python wrapper is included.
-- No extra npm packages, paid APIs, credentials, global configuration or background polling are required. Scheduled cleanup is a separate, optional choice; its manager defaults to preview.
-- Every queue, download, write, login and work entry point must be protected by a correct adapter. The safety callback must be synchronous and side-effect-free. Invalid asynchronous results block cleanup, including rejected Promises.
-- Identity/permission uncertainty, busy work or a failed close preserves the service. Successful shutdown acknowledgment is checked against OS identity; missing exit confirmation never triggers force termination.
-- Registries contain private capabilities, SIDs and paths. They stay in the selected workspace's `.task-resource-guard` directory with restricted ACLs, and must not be uploaded. Stale records are retained; the current limit is 256 registrations.
+This is an early development project. Check [Releases](https://github.com/john07180718/task-resource-guard/releases) for published versions and [validation](VALIDATION.md) for test evidence and untested conditions. The CI badge reports actual workflow status; a passing example does not validate every product integration.
 
-The toolkit does not adopt arbitrary PIDs, kill by name, terminate process trees, delete files or browser data, or automatically restart services. It does not manage production/shared resources, automatically unload every MCP server, fix Codex memory leaks or protect against malicious software running as the same user. A crash or power loss may prevent finally from running.
+If it helps your workflow, a **Star** makes the project easier to find again. Tried it? Open an [Issue](https://github.com/john07180718/task-resource-guard/issues) with your environment, the example or integration you tried, and what happened. Include sanitized output; keep private registry files and credentials out of reports.
 
-## Project status
+[Contributing](CONTRIBUTING.md) · [Roadmap](docs/ROADMAP.md) · [Changelog](CHANGELOG.md) · [Release checklist](docs/RELEASE-CHECKLIST.md) · [Source and license provenance](PROVENANCE.md)
 
-See [installation and removal](INSTALL.md), [security boundaries](SECURITY.md), [contributing](CONTRIBUTING.md), [roadmap](docs/ROADMAP.md), [release checklist](docs/RELEASE-CHECKLIST.md) and [unreleased changes](CHANGELOG.md).
-
-Source repository: [john07180718/task-resource-guard](https://github.com/john07180718/task-resource-guard). General questions and reproducible bugs belong in [Issues](https://github.com/john07180718/task-resource-guard/issues); sensitive reports follow [SECURITY.md](SECURITY.md). No verified public adoption, tagged release or executed GitHub CI run is claimed. Support-program applications and benefits are separate from publishing this source.
+Independent project, with no claimed affiliation or endorsement by OpenAI, Codex, or another tool vendor.

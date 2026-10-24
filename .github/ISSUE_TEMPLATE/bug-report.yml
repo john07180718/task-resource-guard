@@ -1,0 +1,59 @@
+name: Bug report / 問題回報
+description: Report a reproducible problem with the examples, integration or cleanup.
+title: '[Bug] '
+body:
+  - type: markdown
+    attributes:
+      value: |
+        English or 繁體中文 is welcome. Please use a small development-only reproduction.
+        This report is public. Do not attach `.task-resource-guard`, capabilities, SIDs, credentials, private paths or unredacted command lines. For a security vulnerability, follow [SECURITY.md](https://github.com/john07180718/task-resource-guard/security/policy).
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit / 版本或 commit
+      placeholder: Release tag or git rev-parse --short HEAD
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Runtime versions / 執行環境
+      description: OS version, Node version, and PowerShell version if using registered cleanup. No username or machine name is needed.
+      placeholder: Windows version; node --version; $PSVersionTable.PSVersion
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Where did it happen? / 發生在哪個步驟？
+      options:
+        - Scoped-resource example
+        - Registered-service demo
+        - Integrating my own development service
+        - CLI preview or cleanup
+        - Skill installation or documentation
+        - Optional scheduling
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce / 重現方式
+      description: Include the exact command with private paths replaced by placeholders, and a minimal synthetic example if relevant.
+    validations:
+      required: true
+  - type: textarea
+    id: result
+    attributes:
+      label: Expected and actual result / 預期與實際結果
+      description: Include the exit code and whether your private test service was still running. Keep capability and identity details out of the report.
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: Redacted output / 已移除私密資訊的輸出
+      description: CLI mode and event counts are useful. Never paste a registration JSON file.
+      render: text
+    validations:
+      required: false

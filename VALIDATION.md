@@ -1,5 +1,23 @@
 # 本候選版的驗證
 
+## 試用流程增補：2026-10-24
+
+本次增補保留既有核心程式，新增兩個真實 loopback HTTP child 的登記示範與測試。示範核對預覽保留兩個服務、第一次 apply 只關閉閒置服務、忙碌請求完成後再正常關閉，以及中斷時正常收尾。完整命令：
+
+```powershell
+node --test --test-concurrency=1 tests/owned-resource.test.mjs tests/cli.test.mjs tests/metadata.test.mjs tests/registered-cleanup.test.mjs tests/registered-demo.test.mjs
+```
+
+本機檢視環境為 Linux、Node 24.22.1。使用同程序測試模式 `--test-isolation=none` 實際得到 **7 通過、3 項 Windows 測試跳過、0 失敗**；跳過不算 Windows 通過。這個模式只用於本次受限本機測試環境，CI 使用標準的預設程序隔離。
+
+`examples/scoped-resource.mjs` 在允許本機 loopback listener 的執行環境中正常退出，輸出 `Private example resource closed normally.`。初次在禁止 listener 的沙箱執行遇到 `EPERM`，沒有把環境限制當作成功；取得執行權限後才驗證該範例。此結果只涵蓋這個 Linux／Node 組合下的小型 helper 範例。
+
+另已核對新增 JavaScript 語法、YAML／Issue Forms 結構、Markdown 相對連結與圖片尺寸（1280 × 640）。本機沒有 PowerShell 7 或 Windows，新增 HTTP 示範的兩項 Windows 測試與既有 Windows 整合測試，仍須查看實際 [GitHub CI](https://github.com/john07180718/task-resource-guard/actions/workflows/ci.yml) 的完成結果。工作流程檔案本身不代表測試已通過。
+
+發布版本、repository Topics、Social preview 與宣傳草稿各有獨立狀態；不由測試結果推定已完成。沒有新增效能、RAM、費用、Token 或外部採用數據。
+
+## 原始來源候選版：2026-10-24 Windows 驗證紀錄
+
 日期：2026-10-24；Windows 10.0.26300、Node 24.16.0、PowerShell Core 7.6.5。這是本次獨立候選套件的驗證，不能替代每個產品的 adapter 驗收。
 
 ## 已執行
