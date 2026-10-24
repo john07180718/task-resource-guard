@@ -35,6 +35,10 @@ node examples/registered-demo.mjs
 
 示範會在新的暫存工作區建立兩個私有 HTTP 服務，先預覽，再關閉符合條件的閒置服務；等另一個服務的請求完成後，才正常關閉它。確認兩個子程序都退出後，移除示範自己的暫存工作區。**示範會對自己建立的服務實際執行清理；一般清理 CLI 仍預設只預覽。**
 
+![Windows CI 五階段實際輸出重播：預覽、保護忙碌工作、正常關閉並移除示範工作區](docs/assets/demo-replay.gif)
+
+這是 [Windows CI 通過紀錄](https://github.com/john07180718/task-resource-guard/actions/runs/40108746202/job/120915815964) 的實際輸出，整理成 24 秒重播；播放節奏經過調整，方便閱讀。詳見 [來源與製作說明](docs/assets/README.md)。
+
 環境準備、各階段結果與排錯方式見 [快速開始](docs/QUICKSTART.zh-TW.md)。執行範例不會安裝 Skill，也不會接管你現有的工具。
 
 ## 依需求選擇用法

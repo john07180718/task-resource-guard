@@ -17,7 +17,7 @@ Initial source publication was authorized on 2026-10-24 for john07180718/task-re
 - [x] Confirm that the new target has no existing refs/content before the initial upload.
 - [x] Upload the initial source tree, finalized license and documentation; remote commit `6d620084f1fba3a3d4d2c74c13d9e7a5198061c3` and its files were read back on 2026-10-24. Later changes require their own review and verification.
 - [x] Enable and read back private vulnerability reporting; general reports use this repository's Issues.
-- [ ] If CI is chosen, review its workflow, actions/dependencies, permissions and runner use before enabling it; do not claim success until an actual run is checked. The onboarding update adds a read-only CI definition; see [CI.md](CI.md) and [VALIDATION.md](../VALIDATION.md) for its actual state and results.
+- [x] Review the workflow, pinned actions, read-only permissions and runner use; verify actual results. Linux and Windows jobs passed for onboarding commit `77fef6c4720ed77ccc4a212ce536bbf2bb957ef0` in [run 40108746202](https://github.com/john07180718/task-resource-guard/actions/runs/40108746202). See [CI.md](CI.md) and [VALIDATION.md](../VALIDATION.md); a later release commit needs its own completed run.
 - [ ] Create a tag/release only if separately included in the publication authorization; record actual results and remaining limits.
 
 ## Onboarding launch materials

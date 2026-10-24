@@ -4,7 +4,7 @@ The [CI workflow](../.github/workflows/ci.yml) runs on branch pushes, pull reque
 
 | Job | Scope |
 | --- | --- |
-| Ubuntu 24.04 / Node 24 | JavaScript syntax, scoped helper and CLI unit tests, Skill metadata, unsupported-platform handling, and the scoped-resource example. The Windows integration case is skipped. |
+| Ubuntu 24.04 / Node 24 | JavaScript syntax, scoped helper and CLI unit tests, Skill metadata, unsupported-platform handling, and the scoped-resource example. Windows integration runs in the Windows job. |
 | Windows Server 2022 / Node 24 / runner-provided PowerShell 7 | PowerShell syntax; then unit tests, isolated registered-cleanup integration, the complete registered-service demo and the scoped-resource example under one temporary standard user. |
 
 The workflow selects the actual `pwsh.exe` path for `TRG_TEST_POWERSHELL`. Windows tests create only their own synthetic children and registry. Passing them does not establish compatibility with every Windows version, permission setup or third-party adapter. Optional scheduled-task installation and real product integrations are outside this workflow.

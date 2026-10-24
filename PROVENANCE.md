@@ -4,6 +4,8 @@
 
 本次為同一公開專案新增中英文快速開始、兩個隔離 HTTP 服務的可執行示範、對應測試、Issue Forms、CI 定義、發布草稿與原創 SVG／PNG 展示圖。這些新增內容沿用本專案 MIT 授權；沒有加入第三方照片、商標素材或正式服務的登記資料。PNG 由同目錄 SVG 轉出。
 
+另依實際通過的 Windows CI 診斷製作 24 秒 GIF 文字重播，逐字保留五個示範階段，明確標示節奏調整及非螢幕錄影。來源 commit、CI job 與可重製腳本列於 [展示資料說明](docs/assets/README.md)。Pillow 與系統字型只用於重新製作此圖，不是工具執行依賴，也沒有將字型檔散布進本套件。
+
 核心 `skills/task-resource-guard/` 程式與 Skill 在這輪保留原樣。工具執行時仍不需要 npm 套件或外部 API。CI 使用 GitHub 官方 checkout/setup-node Actions，固定至已核對的 commit；它們只在 CI runner 使用，不隨本工具包重新授權或成為本機執行依賴。詳見 [CI 說明](docs/CI.md)。
 
 本次文件與測試紀錄會區分本機可驗證的部分、Windows CI 的實際結果，以及尚未執行的發布／展示設定；草稿不代表已對外發布。所有公開檔案的 SHA-256 清單見 `PACKAGE-MANIFEST.sha256`（不包含該清單本身）。

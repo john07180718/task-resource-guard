@@ -35,6 +35,10 @@ node examples/registered-demo.mjs
 
 The walkthrough creates two private HTTP services in a fresh temporary workspace. It previews both, closes the eligible idle service, finishes the busy service's request, then closes that service normally. It removes its own temporary workspace after confirming both children have exited. **This demo applies cleanup only to its own services; the general cleanup CLI still defaults to dry-run.**
 
+![Replay of five verified Windows CI diagnostics: preview, protect busy work, close normally and remove the demo workspace](docs/assets/demo-replay.gif)
+
+24-second replay of actual output from a [passing Windows CI run](https://github.com/john07180718/task-resource-guard/actions/runs/40108746202/job/120915815964). Playback timing is adjusted for readability; [source and rendering details](docs/assets/README.md).
+
 See the [step-by-step guide](docs/QUICKSTART.md) for prerequisites, expected stages, and troubleshooting. Running an example does not install the Skill or connect your existing tools.
 
 ## Choose how to use it

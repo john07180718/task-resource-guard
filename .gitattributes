@@ -3,3 +3,4 @@
 
 # Artwork must keep its original bytes.
 *.png binary
+*.gif binary

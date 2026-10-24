@@ -10,7 +10,8 @@ The proposed first pre-release is `v0.1.0-alpha.1`, subject to the release check
 - Added bilingual quickstarts and an isolated registered-service demo with two real loopback HTTP services. It verifies dry-run, protects an active HTTP request, confirms normal child exits and removes only its new synthetic workspace.
 - Added tests for the full Windows demo, normal teardown after interruption, and rejection before resource creation on unsupported platforms.
 - Added a read-only GitHub Actions workflow for Linux helper checks and Windows integration, plus guided bug-report and voluntary usage-feedback forms.
-- Added original SVG/PNG project artwork, prepared pre-release notes, repository setup instructions and promotion drafts. These files do not apply settings, publish releases or send messages.
+- Fixed LF checkout consistency and canonical temporary paths in the demonstration/CI; Windows CI runs under a verified temporary standard account while retaining the core ownership checks.
+- Added original SVG/PNG project artwork, a labeled replay of verified Windows CI output, prepared pre-release notes, repository setup instructions and promotion drafts. These files do not apply settings, publish releases or send messages.
 
 ### Initial toolkit
 

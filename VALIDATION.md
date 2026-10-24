@@ -8,6 +8,25 @@
 node --test --test-concurrency=1 tests/owned-resource.test.mjs tests/cli.test.mjs tests/metadata.test.mjs tests/registered-cleanup.test.mjs tests/registered-demo.test.mjs
 ```
 
+### GitHub CI 已驗證
+
+Commit [`77fef6c4720ed77ccc4a212ce536bbf2bb957ef0`](https://github.com/john07180718/task-resource-guard/commit/77fef6c4720ed77ccc4a212ce536bbf2bb957ef0) 的 [push CI](https://github.com/john07180718/task-resource-guard/actions/runs/40108746202) 與 [PR CI](https://github.com/john07180718/task-resource-guard/actions/runs/40108749844) 均完成並通過。以下數字取自 push CI 的實際日誌；後續 commit 應另外核對自己的執行結果。
+
+| 環境 | 實際結果 |
+| --- | --- |
+| Windows Server 2022 10.0.20348、Node 24.22.1、PowerShell 7.6.8，一般使用者 | 10 項中 **9 通過、0 失敗、1 項非 Windows 檢查跳過**；測試約 67.7 秒。三項 Windows 整合／示範案例全數執行並通過。 |
+| Ubuntu 24.04、Node 24.21.0 | 9 項中 **7 通過、0 失敗、2 項 Windows 示範跳過**；JavaScript 語法與 scoped-resource 範例通過。 |
+| Windows 執行環境與收尾 | PowerShell 語法通過；已確認一般使用者身分及其新目錄擁有者；scoped-resource 範例正常退出；測試帳號在程序樹完成後移除。 |
+
+Windows [工作日誌](https://github.com/john07180718/task-resource-guard/actions/runs/40108746202/job/120915815964) 實際確認：
+
+- 既有整合測試的七個私有 child 全部正常退出，合成登記目錄移除。
+- 新 HTTP 示範預覽後兩個服務仍可回應，第一次 apply 只關閉閒置服務，忙碌請求仍保持；請求完成後，第二次 apply 才關閉其服務。
+- 示範中斷案例完成自己的未完工作，再正常收尾；兩個 child 的退出與暫存工作區移除均被核對。
+- 沒有以強制終止取代正常收尾。這些數字是測試結果及測試耗時，不是效能改善或採用人數。
+
+### 本機檢查與初輪修正
+
 本機檢視環境為 Linux、Node 24.22.1。使用同程序測試模式 `--test-isolation=none` 實際得到 **7 通過、3 項 Windows 測試跳過、0 失敗**；跳過不算 Windows 通過。這個模式只用於本次受限本機測試環境，CI 使用標準的預設程序隔離。
 
 `examples/scoped-resource.mjs` 在允許本機 loopback listener 的執行環境中正常退出，輸出 `Private example resource closed normally.`。初次在禁止 listener 的沙箱執行遇到 `EPERM`，沒有把環境限制當作成功；取得執行權限後才驗證該範例。此結果只涵蓋這個 Linux／Node 組合下的小型 helper 範例。
