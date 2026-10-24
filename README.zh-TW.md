@@ -13,7 +13,7 @@
 
 ## 先跑一個獨立範例
 
-這份 Windows 入門流程使用 **Node.js 24 與 PowerShell 7**。以下下載指令另外需要 Git；無須執行 npm install，也不需要 API 金鑰。
+這份 Windows 入門流程使用 **Node.js 24 與 PowerShell 7，請在未提升權限的終端機執行**。以下下載指令另外需要 Git；無須執行 npm install，也不需要 API 金鑰。
 
 ```powershell
 git clone https://github.com/john07180718/task-resource-guard.git

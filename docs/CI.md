@@ -5,11 +5,21 @@ The [CI workflow](../.github/workflows/ci.yml) runs on branch pushes, pull reque
 | Job | Scope |
 | --- | --- |
 | Ubuntu 24.04 / Node 24 | JavaScript syntax, scoped helper and CLI unit tests, Skill metadata, unsupported-platform handling, and the scoped-resource example. The Windows integration case is skipped. |
-| Windows Server 2022 / Node 24 / runner-provided PowerShell 7 | Unit tests, isolated registered-cleanup integration, the complete registered-service demo, PowerShell syntax and the scoped-resource example. |
+| Windows Server 2022 / Node 24 / runner-provided PowerShell 7 | PowerShell syntax; then unit tests, isolated registered-cleanup integration, the complete registered-service demo and the scoped-resource example under one temporary standard user. |
 
 The workflow selects the actual `pwsh.exe` path for `TRG_TEST_POWERSHELL`. Windows tests create only their own synthetic children and registry. Passing them does not establish compatibility with every Windows version, permission setup or third-party adapter. Optional scheduled-task installation and real product integrations are outside this workflow.
 
 Before Windows tests run, CI resolves `RUNNER_TEMP` to its canonical path, verifies it with the toolkit's existing `noLinks` check, and creates a fresh job-owned child directory. It verifies that child too, then sets `TEMP` and `TMP` for subsequent steps through `GITHUB_ENV`. This avoids a runner's short-path temporary-directory alias without weakening the toolkit's rejection of linked or redirected workspaces. Diagnostics report whether the previous default temporary path differed from its canonical path, and whether the runner path was canonical or an alias; they do not print either path. Test teardown continues to close its synthetic children normally and remove only its own temporary workspace; the enclosing job directory belongs to the disposable hosted runner.
+
+## Standard-user Windows execution
+
+GitHub's Windows hosted runners run as administrators with UAC disabled. In that environment, newly created child directories and files can be owned by the Administrators group, while this toolkit requires the current user's SID as owner. The CI setup keeps those owner checks intact.
+
+The guarded [Windows test launcher](../.github/scripts/run-windows-tests.ps1) creates a uniquely named local account in the built-in Users group on the disposable hosted VM. Its cryptographically generated password stays in memory and is masked; it is never written to a file, environment variable or command line. The new account receives full control of only a fresh job-owned temp/log directory and read/execute access to the checkout. The launcher does not alter generated registry ownership or permissions.
+
+`Start-Process -Credential -LoadUserProfile -Wait -PassThru` runs the whole Windows Node suite and scoped example as that account, using explicit Node and PowerShell executable paths. Before testing, the child verifies that it is not an administrator, checks that a directory it creates is owned by its current user, and applies the original `noLinks` check. Only boolean preflight results are printed, not SIDs. Captured test output and the actual process exit code determine CI success. After normal process-tree completion, only the newly created account is removed; no process is force-terminated. If completion is uncertain, the account is left for disposal with the ephemeral VM.
+
+This validates standard-user behavior when the run passes. It does not establish support for elevated-administrator execution.
 
 ## Check actual results
 
@@ -27,3 +37,5 @@ The following official action refs were resolved on 2026-10-24 and pinned to the
 Checkout does not persist credentials. Node package-manager caching is disabled; the project has no npm dependencies to install. GitHub's hosted runner and Node setup may download their own tooling; that is separate from the tool's local-only runtime behavior.
 
 Reference: [GitHub Actions workflow syntax](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax).
+
+Windows references: [GitHub-hosted runner privileges](https://docs.github.com/en/actions/reference/runners/github-hosted-runners), [Start-Process](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.management/start-process), [New-LocalUser](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.localaccounts/new-localuser).

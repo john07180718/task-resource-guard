@@ -13,7 +13,7 @@ A JavaScript resource helper, an opt-in Windows Node service adapter, and an AI 
 
 ## Try it with resources created just for the demo
 
-For the documented Windows walkthrough, use **Node.js 24 and PowerShell 7**. Git is needed for the clone command; no npm install or API key is required.
+For the documented Windows walkthrough, use **Node.js 24 and PowerShell 7 in a non-administrator terminal**. Git is needed for the clone command; no npm install or API key is required.
 
 ```powershell
 git clone https://github.com/john07180718/task-resource-guard.git

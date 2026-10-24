@@ -2,7 +2,15 @@
 
 These drafts have not been posted or sent. Review the current repository and validation evidence before publishing. Do not add success rates, user counts, memory savings or compatibility claims without evidence. Share the repository's default-branch quickstart only after the relevant changes are merged.
 
-## X / Threads — 繁體中文
+## X — 繁體中文
+
+Task Resource Guard：讓自己的 Node.js 開發服務在工作完成後正常關閉。
+
+預設先預覽，保護忙碌工作；需主動接入，目前支援 Windows。附可執行示範，歡迎試用與回報。
+
+https://github.com/john07180718/task-resource-guard
+
+## Threads — 繁體中文
 
 用 AI 開發時，你也遇過任務做完、臨時預覽服務卻還留在背景嗎？
 

@@ -96,7 +96,7 @@ jobs:
       - name: Check PowerShell syntax
         run: |
           $syntaxFailed = $false
-          Get-ChildItem -LiteralPath 'skills/task-resource-guard/scripts' -Filter '*.ps1' -File | ForEach-Object {
+          Get-ChildItem -LiteralPath 'skills/task-resource-guard/scripts', '.github/scripts' -Filter '*.ps1' -File | ForEach-Object {
             $tokens = $null
             $parseErrors = $null
             [System.Management.Automation.Language.Parser]::ParseFile($_.FullName, [ref]$tokens, [ref]$parseErrors) | Out-Null
@@ -107,10 +107,4 @@ jobs:
           }
           if ($syntaxFailed) { throw 'PowerShell syntax validation failed' }
       - name: Run unit tests, isolated cleanup tests and registered-service demo
-        run: >-
-          node --test --test-concurrency=1
-          tests/owned-resource.test.mjs tests/cli.test.mjs
-          tests/metadata.test.mjs tests/registered-cleanup.test.mjs
-          tests/registered-demo.test.mjs
-      - name: Run scoped-resource example
-        run: node examples/scoped-resource.mjs
+        run: ./.github/scripts/run-windows-tests.ps1

@@ -37,7 +37,7 @@ Before publishing:
 1. Review and merge the onboarding changes.
 2. Check a completed successful Windows CI run for the exact commit being tagged, including the registered-service demo. A passing Linux unit test is not Windows evidence.
 3. Read the current [validation record](../VALIDATION.md), [release checklist](RELEASE-CHECKLIST.md), and known limits in the release notes.
-4. Create a release targeting that reviewed commit, use the proposed tag, and mark **Set as a pre-release**. Do not mark it as the latest stable release.
+4. In the published body, replace the prepared notes' default-branch file links with links to the actual release tag, and link the exact completed CI run. Create a release targeting that reviewed commit, use the proposed tag, and mark **Set as a pre-release**. Do not mark it as the latest stable release.
 5. Read back the published tag, source commit and release body. Replace any draft wording only after publication is verified.
 
 No tag, release, npm package, scheduled cleanup or external promotion is created by following the quickstart. This file is a preparation checklist, not publication evidence.

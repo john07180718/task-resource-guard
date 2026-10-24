@@ -16,6 +16,8 @@ node --test --test-concurrency=1 tests/owned-resource.test.mjs tests/cli.test.mj
 
 第一次 [GitHub CI 執行](https://github.com/john07180718/task-resource-guard/actions/runs/40107863803) 的 Linux 工作通過，Windows 工作失敗：metadata 測試無法比對 checkout 後的 frontmatter，三項整合／示範測試在建立登記前被既有的 `noLinks` 路徑檢查拒絕。增補 `.gitattributes` 固定文字檔為 LF；Windows CI 選定實際本機暫存根目錄並核對後，才建立自己的測試目錄。示範同樣先選定並驗證實際暫存根目錄，以處理 Windows TEMP 可能使用別名的情況。核心的連結／重新導向拒絕條件與測試判定均保留。修正後的 Windows 結果須以後續執行紀錄為準。
 
+第二次 [GitHub CI 執行](https://github.com/john07180718/task-resource-guard/actions/runs/40108221428) 已通過 metadata 與路徑準備，日誌確認原 TEMP 是路徑別名；三項 Windows 測試接著在登記子目錄的 owner 驗證被拒絕。GitHub 的 Windows hosted runner [以管理員身分且關閉 UAC 執行](https://docs.github.com/en/actions/reference/runners/github-hosted-runners#administrative-privileges)，這與工具要求個人使用者擁有新登記檔案的情境不同。CI 因此將整套測試放在該次拋棄式 VM 新建的一般帳戶下執行，先核對非管理員身分及新檔案擁有者；不放寬核心 ACL 條件，也不事後修補登記的權限。README 與快速開始已明確要求未提升權限的終端機。管理員／群組擁有者情境仍是已知限制，不能用一般帳戶的通過結果推定相容。
+
 發布版本、repository Topics、Social preview 與宣傳草稿各有獨立狀態；不由測試結果推定已完成。沒有新增效能、RAM、費用、Token 或外部採用數據。
 
 ## 原始來源候選版：2026-10-24 Windows 驗證紀錄

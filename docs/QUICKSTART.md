@@ -6,7 +6,7 @@ Start with the examples, then choose whether to install the Skill or integrate a
 
 ## 1. Prepare the Windows walkthrough
 
-Use a normal PowerShell terminal and a local directory you own.
+Use a non-administrator PowerShell terminal and a local directory you own. The private registry requires files owned by your individual user; an elevated shell can create files owned by the Administrators group and fail that check.
 
 | Requirement | Why it is needed |
 | --- | --- |
