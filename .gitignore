@@ -1,0 +1,17 @@
+.task-resource-guard/
+**/.task-resource-guard/
+.runtime/
+*.log
+*.jsonl
+.env
+.env.*
+!.env.example
+node_modules/
+__pycache__/
+*.pyc
+*profile*/
+*cookie*
+*.db
+*.sqlite*
+*.bak
+*.zip
